@@ -1,0 +1,18 @@
+
+# A sample pipeline for mapping, variant calling, and annotation
+fastq1=$1
+fastq2=$2
+output_csv=$3
+reference="path/to/reference_genome.fasta"
+
+# Step 1: Alignment (using BWA)
+bwa mem $reference $fastq1 $fastq2 > aligned.sam
+
+# Step 2: Convert SAM to BAM and sort
+samtools view -Sb aligned.sam | samtools sort -o aligned_sorted.bam
+
+# Step 3: Variant Calling
+bcftools mpileup -f $reference aligned_sorted.bam | bcftools call -mv -Oz -o variants.vcf.gz
+
+# Step 4: Annotate Variants (optional)
+bcftools annotate variants.vcf.gz > $output_csv
